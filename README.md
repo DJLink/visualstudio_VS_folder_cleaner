@@ -15,6 +15,11 @@ Run the script
 $ py vs_cleaner.py D:/Projects
 ````
 
+Optionally can use -i arg, script will prompt [Y/N] deletion for each folder instead of all or nothing.
+```console
+$ py vs_cleaner.py -i D:/Projects
+````
+
 It will list the folder if any, and ask to delete, at this point it's up to you to either automate the deletion or delete manually.
 
 ![alt text](https://github.com/DJLink/visualstudio_VS_folder_cleaner/raw/master/sample.png "Testing")
