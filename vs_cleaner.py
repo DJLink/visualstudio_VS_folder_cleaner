@@ -7,6 +7,10 @@ import os, sys, send2trash
 
 FOLDER_SEARCH = ".vs"
 
+class bcolors:
+    OK = '\033[92m'
+    WARNING = '\033[91m'
+
 def calculate_folder_size(folder):
     folder_size = 0
     for (path, dirs, files) in os.walk(folder):
@@ -61,12 +65,21 @@ def query_yes_no(question, default="no"):
 if len(sys.argv)<=1:
     print("Usage:", sys.argv[0], "<root folder to search>")
     sys.exit()
+	
+ask_each_folder = False;
 
 ROOT_SEARCH = sys.argv[1]
+
+if len(sys.argv)>=2:
+	if sys.argv[1] == '-i':
+		ask_each_folder = True;
+		ROOT_SEARCH = sys.argv[2]
 
 all_folders = list()
 
 all_folders_size = 0
+
+deleted_amount = 0
 
 # Find all folders
 for root, dirs, files in os.walk(ROOT_SEARCH):
@@ -74,25 +87,31 @@ for root, dirs, files in os.walk(ROOT_SEARCH):
         if dir.endswith(FOLDER_SEARCH):
             folder = os.path.join(root, dir)
             size = calculate_folder_size(folder)
-            print(folder, "(", human_bytes(size), ")")
+            print(bcolors.OK + folder, "(", human_bytes(size), ")")
+
+            if  ask_each_folder ==  True:
+                if  query_yes_no(bcolors.WARNING + "Delete?", "no")   ==  True:
+                    send2trash.send2trash(folder)
+                    deleted_amount+=size
+            else:
+                all_folders.append(folder)
+            
             all_folders_size += size
-            all_folders.append(folder)
-
-
-class bcolors:
-    OK = '\033[92m'
-    WARNING = '\033[91m'
 
 
 #Query user for deletion (sends to recicle bin if possible)
 if len(all_folders) > 0 :
-    print(bcolors.OK + "Full Size:", human_bytes(all_folders_size)) 
+    print(bcolors.OK + "Full Size:", human_bytes(all_folders_size))
     if query_yes_no(bcolors.WARNING + "Do you wish to delete all?", "no") == True:
         print("Deleting...")
-
-        for dir in all_folders:
+			
+        for dir in  all_folders:
             send2trash.send2trash(dir)
 
-        print("Done!")
-else:
+    print("Done!")
+elif ask_each_folder ==  False:
     print(bcolors.OK + "No folders found")
+
+if  ask_each_folder ==  True:
+    print(bcolors.OK + "Found :", human_bytes(all_folders_size))
+    print(bcolors.OK + "Cleaned :", human_bytes(deleted_amount))
